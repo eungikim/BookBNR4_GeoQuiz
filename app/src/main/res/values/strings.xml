@@ -12,4 +12,5 @@
     <string name="next_button">Next</string>
     <string name="correct_toast">정답!</string>
     <string name="incorrect_toast">틀렸답!</string>
+    <string name="correct_percentage_toast">정답률 %1$d%%</string>
 </resources>

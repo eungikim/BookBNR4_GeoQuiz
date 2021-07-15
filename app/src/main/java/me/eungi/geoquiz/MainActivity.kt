@@ -2,12 +2,15 @@ package me.eungi.geoquiz
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+
+private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
@@ -68,21 +71,41 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion() {
         val questionTextResId = questionBank[currentIndex].textResId
         questionTextView.setText(questionTextResId)
+        if (questionBank[currentIndex].solve) {
+            trueButton.isEnabled = false
+            falseButton.isEnabled = false
+        } else {
+            trueButton.isEnabled = true
+            falseButton.isEnabled = true
+        }
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = questionBank[currentIndex].answer
+        questionBank[currentIndex].solve = true
+        questionBank[currentIndex].correct = correctAnswer == userAnswer
+        trueButton.isEnabled = false
+        falseButton.isEnabled = false
 
         val messageResId = if (userAnswer == correctAnswer) {
             R.string.correct_toast
         } else {
             R.string.incorrect_toast
         }
-        showTopToast(messageResId)
+        showTopToast(getString(messageResId))
+        if (checkSolveAllQuestion()) {
+            val correctPercentage = (questionBank.count { it.correct }.toDouble() / questionBank.size * 100).toInt()
+            val answerPercentage = getString(R.string.correct_percentage_toast, correctPercentage)
+            showTopToast(answerPercentage)
+        }
+    }
+
+    private fun checkSolveAllQuestion(): Boolean {
+        return questionBank.all { it.solve }
     }
 
     /* Challenge */
-    fun showTopToast(strRes: Int) {
+    fun showTopToast(strRes: String) {
         val container = layoutInflater.inflate(R.layout.toast_text, findViewById(R.id.toast_container))
         val text: TextView = container.findViewById(R.id.toast_text)
         text.setText(strRes)
@@ -90,6 +113,5 @@ class MainActivity : AppCompatActivity() {
         toast.setGravity(Gravity.TOP, 0, 300)
         toast.view = container
         toast.show()
-
     }
 }
