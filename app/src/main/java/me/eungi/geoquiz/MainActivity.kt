@@ -9,8 +9,10 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 
 private const val TAG = "MainActivity"
+private const val KEY_INDEX = "index"
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,20 +22,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nextButton: ImageButton
     private lateinit var questionTextView: TextView
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia, true),
-        Question(R.string.question_oceans, true),
-        Question(R.string.question_mideast, false),
-        Question(R.string.question_africa, false),
-        Question(R.string.question_americas, true),
-        Question(R.string.question_asia, true),
-    )
-
-    private var currentIndex = 0
+    private val quizViewModel: QuizViewModel by lazy {
+        ViewModelProvider(this).get(QuizViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         trueButton = findViewById(R.id.true_button)
         falseButton = findViewById(R.id.false_button)
@@ -42,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         questionTextView = findViewById(R.id.question_text_view)
 
         questionTextView.setOnClickListener {
-            currentIndex = (currentIndex + 1) % questionBank.size
+            quizViewModel.moveToNext()
             updateQuestion()
         }
 
@@ -55,23 +51,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         previousButton.setOnClickListener {
-            if (currentIndex -1 < 0) currentIndex = questionBank.size - 1
-            else currentIndex = (currentIndex - 1) % questionBank.size
+            quizViewModel.moveToPrevious()
             updateQuestion()
         }
 
         nextButton.setOnClickListener {
-            currentIndex = (currentIndex + 1) % questionBank.size
+            quizViewModel.moveToNext()
             updateQuestion()
         }
 
         updateQuestion()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(TAG, "onSaveInstanceState")
+        outState.putInt(KEY_INDEX, quizViewModel.currentIndex)
+    }
+
     private fun updateQuestion() {
-        val questionTextResId = questionBank[currentIndex].textResId
+        val questionTextResId = quizViewModel.currentQuestionText
         questionTextView.setText(questionTextResId)
-        if (questionBank[currentIndex].solve) {
+        if (quizViewModel.currentQuestionSolve) {
             trueButton.isEnabled = false
             falseButton.isEnabled = false
         } else {
@@ -81,9 +82,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAnswer(userAnswer: Boolean) {
-        val correctAnswer = questionBank[currentIndex].answer
-        questionBank[currentIndex].solve = true
-        questionBank[currentIndex].correct = correctAnswer == userAnswer
+        val correctAnswer = quizViewModel.currentQuestionAnswer
+        quizViewModel.solve(true)
+        quizViewModel.correct(correctAnswer == userAnswer)
         trueButton.isEnabled = false
         falseButton.isEnabled = false
 
@@ -93,15 +94,11 @@ class MainActivity : AppCompatActivity() {
             R.string.incorrect_toast
         }
         showTopToast(getString(messageResId))
-        if (checkSolveAllQuestion()) {
-            val correctPercentage = (questionBank.count { it.correct }.toDouble() / questionBank.size * 100).toInt()
+        if (quizViewModel.checkSolveAllQuestion()) {
+            val correctPercentage = quizViewModel.correctPercentage()
             val answerPercentage = getString(R.string.correct_percentage_toast, correctPercentage)
             showTopToast(answerPercentage)
         }
-    }
-
-    private fun checkSolveAllQuestion(): Boolean {
-        return questionBank.all { it.solve }
     }
 
     /* Challenge */
