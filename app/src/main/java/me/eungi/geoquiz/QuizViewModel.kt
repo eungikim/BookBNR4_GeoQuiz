@@ -15,7 +15,6 @@ class QuizViewModel : ViewModel() {
     )
 
     var currentIndex = 0
-    var isCheater = false
 
     val currentQuestionAnswer: Boolean
         get() = questionBank[currentIndex].answer
@@ -30,12 +29,19 @@ class QuizViewModel : ViewModel() {
     val currentQuestionCorrect: Boolean
         get() = questionBank[currentIndex].correct
 
+    val currentQuestionCheat: Boolean
+        get() = questionBank[currentIndex].cheat
+
     fun solve(solve: Boolean) {
         questionBank[currentIndex].solve = solve
     }
 
     fun correct(correct: Boolean) {
         questionBank[currentIndex].correct = correct
+    }
+
+    fun cheat(cheat: Boolean) {
+        questionBank[currentIndex].cheat = cheat
     }
 
     fun checkSolveAllQuestion(): Boolean {
