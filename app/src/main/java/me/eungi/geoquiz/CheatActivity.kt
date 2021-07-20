@@ -10,6 +10,7 @@ import android.widget.TextView
 
 const val EXTRA_ANSWER_SHOWN = "me.eungi.geoquiz.EXTRA_ANSWER_SHOWN"
 private const val EXTRA_ANSWER_IS_TRUE = "me.eungi.geoquiz.EXTRA_ANSWER_IS_TRUE"
+private const val KEY_SHOWN_ANSWER = "KEY_SHOWN_ANSWER"
 
 class CheatActivity : AppCompatActivity() {
 
@@ -17,6 +18,7 @@ class CheatActivity : AppCompatActivity() {
     private lateinit var showAnswerButton: Button
 
     private var answerIsTrue = false
+    private var shownAnswer = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,13 +29,26 @@ class CheatActivity : AppCompatActivity() {
         answerTextView = findViewById(R.id.answer_text_view)
         showAnswerButton = findViewById(R.id.show_answer_button)
         showAnswerButton.setOnClickListener {
-            val answerText = when {
-                answerIsTrue -> R.string.true_button
-                else -> R.string.false_button
-            }
-            answerTextView.setText(answerText)
-            setAnswerShownResult(true)
+            shownAnswer = true
+            showAnswer()
         }
+
+        shownAnswer = savedInstanceState?.getBoolean(KEY_SHOWN_ANSWER, false) ?: false
+        if (shownAnswer) showAnswer()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_SHOWN_ANSWER, shownAnswer)
+    }
+
+    private fun showAnswer() {
+        val answerText = when {
+            answerIsTrue -> R.string.true_button
+            else -> R.string.false_button
+        }
+        answerTextView.setText(answerText)
+        setAnswerShownResult(true)
     }
 
 
