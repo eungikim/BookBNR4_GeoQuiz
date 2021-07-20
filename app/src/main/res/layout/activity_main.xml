@@ -35,6 +35,14 @@
             android:text="@string/false_button" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/remain_cheat_count_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        tools:text="남은 컨닝 횟수 3회"
+        />
+
     <Button
         android:id="@+id/cheat_button"
         android:layout_width="wrap_content"

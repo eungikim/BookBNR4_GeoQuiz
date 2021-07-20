@@ -16,7 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 
 private const val TAG = "MainActivity"
-private const val KEY_INDEX = "index"
+private const val KEY_INDEX = "KEY_INDEX"
+private const val KEY_CHEAT_COUNT = "KEY_CHEAT_COUNT"
 private const val REQUEST_CODE_CHEAT = 0
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nextButton: ImageButton
     private lateinit var cheatButton: Button
     private lateinit var questionTextView: TextView
+    private lateinit var cheatCountTextView: TextView
 
     private val quizViewModel: QuizViewModel by lazy {
         ViewModelProvider(this).get(QuizViewModel::class.java)
@@ -38,6 +40,8 @@ class MainActivity : AppCompatActivity() {
 
         val currentIndex = savedInstanceState?.getInt(KEY_INDEX, 0) ?: 0
         quizViewModel.currentIndex = currentIndex
+        val cheatCount = savedInstanceState?.getInt(KEY_CHEAT_COUNT, 3) ?: 3
+        quizViewModel.cheatCount = cheatCount
 
         trueButton = findViewById(R.id.true_button)
         falseButton = findViewById(R.id.false_button)
@@ -45,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         nextButton = findViewById(R.id.next_button)
         cheatButton = findViewById(R.id.cheat_button)
         questionTextView = findViewById(R.id.question_text_view)
+        cheatCountTextView = findViewById(R.id.remain_cheat_count_text_view)
 
         questionTextView.setOnClickListener {
             quizViewModel.moveToNext()
@@ -82,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateQuestion()
+        setCheatButton()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -90,6 +96,8 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_CODE_CHEAT) {
             quizViewModel.cheat(data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false)
+            quizViewModel.cheatCount--
+            setCheatButton()
         }
     }
 
@@ -97,6 +105,19 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         Log.d(TAG, "onSaveInstanceState")
         outState.putInt(KEY_INDEX, quizViewModel.currentIndex)
+        outState.putInt(KEY_CHEAT_COUNT, quizViewModel.cheatCount)
+    }
+
+    private fun setCheatButton() {
+        if (quizViewModel.cheatCount in 1..3) {
+            val cheatCountText = "남은 컨닝 횟수 ${quizViewModel.cheatCount}회"
+            cheatCountTextView.setText(cheatCountText)
+        }
+        else {
+            val cheatCountText = "남은 컨닝 횟수 0회"
+            cheatCountTextView.setText(cheatCountText)
+            cheatButton.isEnabled = false
+        }
     }
 
     private fun updateQuestion() {
@@ -105,9 +126,11 @@ class MainActivity : AppCompatActivity() {
         if (quizViewModel.currentQuestionSolve) {
             trueButton.isEnabled = false
             falseButton.isEnabled = false
+            cheatButton.isEnabled = false
         } else {
             trueButton.isEnabled = true
             falseButton.isEnabled = true
+            cheatButton.isEnabled = true
         }
     }
 
@@ -118,6 +141,7 @@ class MainActivity : AppCompatActivity() {
             quizViewModel.correct(correctAnswer == userAnswer)
         trueButton.isEnabled = false
         falseButton.isEnabled = false
+        cheatButton.isEnabled = false
 
 //        val messageResId = if (userAnswer == correctAnswer) {
 //            R.string.correct_toast
