@@ -3,6 +3,7 @@ package me.eungi.geoquiz
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -32,6 +33,8 @@ class CheatActivity : AppCompatActivity() {
             shownAnswer = true
             showAnswer()
         }
+        val apiLvText = "API Lv: ${Build.VERSION.SDK_INT}"
+        findViewById<TextView>(R.id.api_lv_text_view).setText(apiLvText)
 
         shownAnswer = savedInstanceState?.getBoolean(KEY_SHOWN_ANSWER, false) ?: false
         if (shownAnswer) showAnswer()
